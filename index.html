@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEP GROUP - ID Card Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- High Performance Liquid Mesh Background -->
+  <div class="liquid-background"></div>
+
+  <!-- Liquid Glass Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-badge">MEP</div>
+      <div class="header-title">
+        <h1>ID Card Generator</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="btnResetDefault">
+        Reset
+      </button>
+      <button class="btn btn-primary" id="btnDownloadBothHeader">
+        Download Both (JPG)
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="app-container">
+
+    <!-- Glass Form Panel -->
+    <aside class="glass-panel form-panel">
+      <!-- Glass Tabs Nav -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="tabFront">
+          <span>Front Side</span>
+          <span class="tab-badge">6 Fields</span>
+        </button>
+        <button class="tab-btn" data-tab="tabBack">
+          <span>Back Side</span>
+          <span class="tab-badge">5 Fields</span>
+        </button>
+      </nav>
+
+      <div class="form-content">
+
+        <!-- FRONT SIDE FORM -->
+        <div class="tab-pane active" id="tabFront">
+          
+          <!-- 1. Employee Photo -->
+          <div class="form-group">
+            <label>1. Employee Photo</label>
+            <div class="photo-uploader" id="photoUploader">
+              <div class="uploader-inner">
+                <span class="upload-icon">📷</span>
+                <span class="uploader-text">Upload or Drag Photo Here</span>
+              </div>
+              <input type="file" id="photoInput" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Photo Zoom & Pan controls -->
+            <div class="photo-controls">
+              <div class="control-row">
+                <span>Zoom:</span>
+                <input type="range" class="control-slider" id="photoZoom" min="0.5" max="2.5" step="0.05" value="1">
+              </div>
+              <div class="control-row">
+                <span>Horizontal:</span>
+                <input type="range" class="control-slider" id="photoPanX" min="-120" max="120" step="1" value="0">
+              </div>
+              <div class="control-row">
+                <span>Vertical:</span>
+                <input type="range" class="control-slider" id="photoPanY" min="-120" max="120" step="1" value="0">
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnResetPhotoAdjust" style="align-self: flex-end; margin-top: 4px;">
+                Reset Position
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Full Name -->
+          <div class="form-group">
+            <label for="inputName">2. Full Name</label>
+            <input type="text" id="inputName" class="form-input" value="Kazi Mahmud Alam" placeholder="Enter Full Name">
+          </div>
+
+          <!-- 3. Designation -->
+          <div class="form-group">
+            <label for="inputDesignation">3. Designation</label>
+            <input type="text" id="inputDesignation" class="form-input" value="Senior Executive" placeholder="Enter Designation">
+          </div>
+
+          <!-- 4. Section -->
+          <div class="form-group">
+            <label for="inputSection">4. Section</label>
+            <input type="text" id="inputSection" class="form-input" value="Administration" placeholder="Enter Section / Department">
+          </div>
+
+          <!-- 5. Employee ID -->
+          <div class="form-group">
+            <label for="inputEmployeeId">5. Employee ID</label>
+            <input type="text" id="inputEmployeeId" class="form-input" value="17224" placeholder="Enter Employee ID">
+          </div>
+
+          <!-- 6. Employee Signature -->
+          <div class="form-group">
+            <label>6. Employee Signature</label>
+            <div class="signature-box">
+              <div class="sig-tools">
+                <span class="sig-title">Signature Pad</span>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-secondary btn-sm" id="btnClearSig" type="button">Clear</button>
+                  <label class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">
+                    Upload
+                    <input type="file" id="sigImageInput" accept="image/*" style="display: none;">
+                  </label>
+                </div>
+              </div>
+              <div class="sig-canvas-wrapper">
+                <canvas id="signatureCanvas"></canvas>
+                <div class="sig-placeholder" id="sigPlaceholder">Draw signature with mouse or stylus</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BACK SIDE FORM -->
+        <div class="tab-pane" id="tabBack">
+
+          <!-- 7. Date of Issue -->
+          <div class="form-group">
+            <label for="inputDateOfIssue">7. Date of Issue</label>
+            <input type="text" id="inputDateOfIssue" class="form-input" value="14 Sep 2026" placeholder="e.g. 14 Sep 2026">
+          </div>
+
+          <!-- 8. Date of Joining -->
+          <div class="form-group">
+            <label for="inputDateOfJoin">8. Date of Joining</label>
+            <input type="text" id="inputDateOfJoin" class="form-input" value="01 Oct 2025" placeholder="e.g. 01 Oct 2025">
+          </div>
+
+          <!-- 9. Blood Group -->
+          <div class="form-group">
+            <label for="inputBloodGroup">9. Blood Group</label>
+            <input type="text" id="inputBloodGroup" class="form-input" list="bloodList" value="A+(ve)" placeholder="e.g. A+(ve)">
+            <datalist id="bloodList">
+              <option value="A+(ve)">
+              <option value="A-(ve)">
+              <option value="B+(ve)">
+              <option value="B-(ve)">
+              <option value="O+(ve)">
+              <option value="O-(ve)">
+              <option value="AB+(ve)">
+              <option value="AB-(ve)">
+            </datalist>
+          </div>
+
+          <!-- 10. National ID (NID) -->
+          <div class="form-group">
+            <label for="inputNID">10. National ID (NID)</label>
+            <input type="text" id="inputNID" class="form-input" value="3514381490522" placeholder="Enter National ID">
+          </div>
+
+          <!-- 11. Emergency Contact Number -->
+          <div class="form-group">
+            <label for="inputEmergencyContact">11. Emergency Contact Number</label>
+            <input type="text" id="inputEmergencyContact" class="form-input" value="+8801321188806" placeholder="+8801XXXXXXXXX">
+          </div>
+
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Preview Panel -->
+    <section class="preview-panel">
+
+      <!-- Preview Toolbar -->
+      <div class="preview-toolbar">
+        <div class="toolbar-title">
+          Live Card Preview
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnDownloadBoth">
+            Download Both (JPG)
+          </button>
+        </div>
+      </div>
+
+      <!-- Dual Cards View -->
+      <div class="cards-container">
+
+        <!-- Front Card -->
+        <div class="card-column">
+          <div class="card-label">Front Side</div>
+          <div class="card-wrapper">
+            <canvas id="frontCanvas" class="id-card-canvas"></canvas>
+          </div>
+          <button class="btn btn-primary card-download-btn" id="btnDownloadFront">
+            Download Front (JPG)
+          </button>
+        </div>
+
+        <!-- Back Card -->
+        <div class="card-column">
+          <div class="card-label">Back Side</div>
+          <div class="card-wrapper">
+            <canvas id="backCanvas" class="id-card-canvas"></canvas>
+          </div>
+          <button class="btn btn-primary card-download-btn" id="btnDownloadBack">
+            Download Back (JPG)
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Corner Credit Badge (Small Size, Premium Glass UI) -->
+  <div class="corner-credit">
+    <div class="credit-title">Created : <strong>Arif Ahmed Anik</strong></div>
+    <div class="credit-org">MEP FAN LTD.</div>
+  </div>
+
+  <!-- Toast Message -->
+  <div class="toast" id="toast">Action completed successfully</div>
+
+  <!-- Scripts -->
+  <script src="templates_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
