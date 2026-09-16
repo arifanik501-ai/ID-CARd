@@ -25,10 +25,10 @@ Phone : + 88-02-8392043`;
 // Application State
 const state = {
   // Front fields
-  name: 'Kazi Mahmud Alam',
-  designation: 'Senior Executive',
-  section: 'Administration',
-  employeeId: '17224',
+  name: '',
+  designation: '',
+  section: '',
+  employeeId: '',
   photoImg: null,
   photoDataUrl: null,
   photoScale: 1.0,
@@ -37,13 +37,13 @@ const state = {
   signatureImg: null,
   signatureDataUrl: null,
 
-  // Back fields (Always defaults to today's date)
-  dateOfIssue: getFormattedTodayDate(),
-  dateOfJoin: '01 Oct 2025',
+  // Back fields
+  dateOfIssue: '',
+  dateOfJoin: '',
   showDateOfJoin: true,
-  bloodGroup: 'A+(ve)',
-  nid: '3514381490522',
-  emergencyContact: '+8801321188806',
+  bloodGroup: '',
+  nid: '',
+  emergencyContact: '',
   headOffice: DEFAULT_HEAD_OFFICE,
 
   // Options
@@ -145,13 +145,10 @@ function loadSavedState() {
     if (parsed.section !== undefined) state.section = parsed.section;
     if (parsed.employeeId !== undefined) state.employeeId = parsed.employeeId;
 
-    // Date of Issue: Always default to today's date, unless explicitly customized in today's active session
-    const todayFormatted = getFormattedTodayDate();
-    const todayDateKey = new Date().toDateString();
-    if (parsed.dateOfIssueSavedDate === todayDateKey && parsed.dateOfIssueCustom && parsed.dateOfIssue) {
+    if (parsed.dateOfIssue !== undefined) {
       state.dateOfIssue = parsed.dateOfIssue;
     } else {
-      state.dateOfIssue = todayFormatted;
+      state.dateOfIssue = '';
     }
 
     if (parsed.dateOfJoin !== undefined) state.dateOfJoin = parsed.dateOfJoin;
@@ -1292,20 +1289,20 @@ function downloadBothCards() {
   }, 400);
 }
 
-// Reset all fields to default
+// Reset all fields to blank
 function resetAllDefaults() {
   localStorage.removeItem(LOCAL_STORAGE_KEY);
 
-  state.name = 'Kazi Mahmud Alam';
-  state.designation = 'Senior Executive';
-  state.section = 'Administration';
-  state.employeeId = '17224';
-  state.dateOfIssue = getFormattedTodayDate();
-  state.dateOfJoin = '01 Oct 2025';
+  state.name = '';
+  state.designation = '';
+  state.section = '';
+  state.employeeId = '';
+  state.dateOfIssue = '';
+  state.dateOfJoin = '';
   state.showDateOfJoin = true;
-  state.bloodGroup = 'A+(ve)';
-  state.nid = '3514381490522';
-  state.emergencyContact = '+8801321188806';
+  state.bloodGroup = '';
+  state.nid = '';
+  state.emergencyContact = '';
   state.headOffice = DEFAULT_HEAD_OFFICE;
   setHeadOfficeLock(true);
   state.photoDataUrl = null;
@@ -1325,8 +1322,9 @@ function resetAllDefaults() {
   syncInputsFromState();
   clearSignature();
   initDefaultPhoto();
+  updatePhotoUploaderUI();
   scheduleRenderAll();
-  showToast('Default information restored!');
+  showToast('All fields cleared to blank!');
 }
 
 // Toast notification helper
