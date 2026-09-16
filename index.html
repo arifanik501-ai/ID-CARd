@@ -50,12 +50,6 @@
         <span class="theme-mode-text" id="themeModeText">Dark</span>
       </button>
 
-      <!-- Reset Default Button -->
-      <button class="btn btn-secondary" id="btnResetDefault" type="button" title="Reset All Data to Defaults">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-        <span>Reset</span>
-      </button>
-
       <!-- Primary Header Download Both Button -->
       <button class="btn btn-primary" id="btnDownloadBothHeader" type="button">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -80,7 +74,7 @@
         <button class="tab-btn" data-tab="tabBack" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="13" y2="16"></line></svg>
           <span>Back Side</span>
-          <span class="tab-badge">5 Fields</span>
+          <span class="tab-badge">6 Fields</span>
         </button>
       </nav>
 
@@ -280,8 +274,46 @@
             <input type="text" id="inputEmergencyContact" class="form-input" value="+8801321188806" placeholder="+8801XXXXXXXXX" autocomplete="off">
           </div>
 
+          <!-- 12. Head Office Address (Editable with Lock/Unlock Toggle) -->
+          <div class="form-group">
+            <div class="field-header">
+              <span class="field-num">12</span>
+              <label for="inputHeadOffice">Head Office Address</label>
+              <button type="button" class="btn-lock-toggle locked" id="btnToggleLockHeadOffice" title="Click to Unlock Head Office Address" aria-label="Unlock Head Office Address" aria-pressed="false">
+                <span class="lock-icon-wrap">
+                  <svg class="lock-icon icon-locked" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <svg class="lock-icon icon-unlocked" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                  </svg>
+                </span>
+                <span class="lock-status-text" id="lockStatusText">Locked</span>
+              </button>
+            </div>
+            <div class="textarea-lock-wrapper">
+              <textarea id="inputHeadOffice" class="form-input form-textarea is-locked" rows="4" readonly placeholder="Enter Head Office Address" autocomplete="off" spellcheck="false">Head Office :
+61, Bijoy Nagar, Eastern Arzoo Tower,
+(13 th Floor ), Dhaka-1000.
+Phone : + 88-02-8392043</textarea>
+            </div>
+          </div>
+
         </div>
 
+      </div>
+
+      <!-- Pinned Form Panel Footer with Reset Action -->
+      <div class="form-panel-footer">
+        <button class="btn-panel-reset" id="btnOpenResetModal" type="button" title="Reset All Form Data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <polyline points="3 3 3 8 8 8"></polyline>
+          </svg>
+          <span>Reset Form Data</span>
+        </button>
       </div>
     </aside>
 
@@ -357,6 +389,31 @@
   <div class="toast" id="toast">
     <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
     <span id="toastMsg">Action completed successfully</span>
+  </div>
+
+  <!-- Frosted Glass Reset Confirmation Modal -->
+  <div class="glass-modal-backdrop" id="resetModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalResetTitle">
+    <div class="glass-modal">
+      <div class="modal-icon-wrap warning">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h3 class="modal-title" id="modalResetTitle">Reset Form Data?</h3>
+      <p class="modal-desc" id="modalResetDesc">Are you sure you want to reset all 12 fields, photo, and signature to sample defaults? Your current unsaved edits will be cleared.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-modal-cancel" id="btnCancelReset" type="button">Cancel</button>
+        <button class="btn btn-modal-confirm" id="btnConfirmReset" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Yes, Reset All</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->

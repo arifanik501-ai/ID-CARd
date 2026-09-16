@@ -17,6 +17,11 @@ function getFormattedTodayDate(targetDate = new Date()) {
   return `${day} ${month} ${year}`;
 }
 
+const DEFAULT_HEAD_OFFICE = `Head Office :
+61, Bijoy Nagar, Eastern Arzoo Tower,
+(13 th Floor ), Dhaka-1000.
+Phone : + 88-02-8392043`;
+
 // Application State
 const state = {
   // Front fields
@@ -38,6 +43,7 @@ const state = {
   bloodGroup: 'A+(ve)',
   nid: '3514381490522',
   emergencyContact: '+8801321188806',
+  headOffice: DEFAULT_HEAD_OFFICE,
 
   // Options
   highResExport: true
@@ -110,6 +116,7 @@ function scheduleSaveState() {
         bloodGroup: state.bloodGroup,
         nid: state.nid,
         emergencyContact: state.emergencyContact,
+        headOffice: state.headOffice,
         photoScale: state.photoScale,
         photoOffsetX: state.photoOffsetX,
         photoOffsetY: state.photoOffsetY,
@@ -149,6 +156,7 @@ function loadSavedState() {
     if (parsed.bloodGroup !== undefined) state.bloodGroup = parsed.bloodGroup;
     if (parsed.nid !== undefined) state.nid = parsed.nid;
     if (parsed.emergencyContact !== undefined) state.emergencyContact = parsed.emergencyContact;
+    if (parsed.headOffice !== undefined) state.headOffice = parsed.headOffice;
     if (parsed.photoScale !== undefined) state.photoScale = parsed.photoScale;
     if (parsed.photoOffsetX !== undefined) state.photoOffsetX = parsed.photoOffsetX;
     if (parsed.photoOffsetY !== undefined) state.photoOffsetY = parsed.photoOffsetY;
@@ -184,6 +192,7 @@ function syncInputsFromState() {
   setVal('inputBloodGroup', state.bloodGroup);
   setVal('inputNID', state.nid);
   setVal('inputEmergencyContact', state.emergencyContact);
+  setVal('inputHeadOffice', state.headOffice);
 
   setVal('photoZoom', state.photoScale);
   setVal('photoPanX', state.photoOffsetX);
@@ -273,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCanvases();
   initSignaturePad();
   initEventListeners();
+  setHeadOfficeLock(true);
   initCanvasPhotoInteractions();
   updateTabIndicator('tabFront');
   loadAssets();
@@ -506,6 +516,30 @@ function initEventListeners() {
   bindInput('inputBloodGroup', 'bloodGroup', scheduleRenderBack);
   bindInput('inputNID', 'nid', scheduleRenderBack);
   bindInput('inputEmergencyContact', 'emergencyContact', scheduleRenderBack);
+  bindInput('inputHeadOffice', 'headOffice', scheduleRenderBack);
+
+  // Head Office Lock / Unlock Toggle Button
+  const btnToggleLockHeadOffice = document.getElementById('btnToggleLockHeadOffice');
+  if (btnToggleLockHeadOffice) {
+    btnToggleLockHeadOffice.addEventListener('click', () => {
+      setHeadOfficeLock(!isHeadOfficeLocked, true);
+    });
+  }
+
+  // Guidance feedback when interacting with locked textarea
+  const headOfficeTextarea = document.getElementById('inputHeadOffice');
+  if (headOfficeTextarea) {
+    headOfficeTextarea.addEventListener('click', () => {
+      if (isHeadOfficeLocked) {
+        showToast('Click the Unlock button above to edit Head Office Address');
+      }
+    });
+    headOfficeTextarea.addEventListener('keydown', (e) => {
+      if (isHeadOfficeLocked && !['Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        showToast('Click the Unlock button above to edit Head Office Address');
+      }
+    });
+  }
 
   // Photo controls
   const photoInput = document.getElementById('photoInput');
@@ -633,9 +667,109 @@ function initEventListeners() {
     });
   }
 
-  // Reset to default button
+  // Reset Confirmation Modal Handlers
+  const resetModal = document.getElementById('resetModal');
+  const btnOpenResetModal = document.getElementById('btnOpenResetModal');
+  const btnCancelReset = document.getElementById('btnCancelReset');
+  const btnConfirmReset = document.getElementById('btnConfirmReset');
+
+  function openResetModal() {
+    if (!resetModal) return;
+    resetModal.classList.add('is-open');
+    resetModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (btnCancelReset) btnCancelReset.focus();
+  }
+
+  function closeResetModal() {
+    if (!resetModal) return;
+    resetModal.classList.remove('is-open');
+    resetModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  if (btnOpenResetModal) {
+    btnOpenResetModal.addEventListener('click', openResetModal);
+  }
+  if (btnCancelReset) {
+    btnCancelReset.addEventListener('click', closeResetModal);
+  }
+  if (btnConfirmReset) {
+    btnConfirmReset.addEventListener('click', () => {
+      closeResetModal();
+      resetAllDefaults();
+    });
+  }
+  if (resetModal) {
+    // Click outside modal content closes modal
+    resetModal.addEventListener('click', (e) => {
+      if (e.target === resetModal) {
+        closeResetModal();
+      }
+    });
+  }
+
+  // Escape key dismisses modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && resetModal && resetModal.classList.contains('is-open')) {
+      closeResetModal();
+    }
+  });
+
+  // Reset to default button (legacy fallback if present)
   const btnReset = document.getElementById('btnResetDefault');
-  if (btnReset) btnReset.addEventListener('click', resetAllDefaults);
+  if (btnReset) btnReset.addEventListener('click', openResetModal);
+}
+
+// Head Office Lock State Controller (Initially Locked, No Password Required)
+let isHeadOfficeLocked = true;
+
+function setHeadOfficeLock(locked, showNotification = false) {
+  isHeadOfficeLocked = locked;
+  const textarea = document.getElementById('inputHeadOffice');
+  const btnLock = document.getElementById('btnToggleLockHeadOffice');
+  const lockStatusText = document.getElementById('lockStatusText');
+  const iconLocked = document.querySelector('.lock-icon.icon-locked');
+  const iconUnlocked = document.querySelector('.lock-icon.icon-unlocked');
+
+  if (textarea) {
+    if (locked) {
+      textarea.setAttribute('readonly', 'true');
+      textarea.classList.add('is-locked');
+      textarea.title = 'Head Office Address is locked. Click Unlock to edit.';
+    } else {
+      textarea.removeAttribute('readonly');
+      textarea.classList.remove('is-locked');
+      textarea.title = 'Edit Head Office Address';
+      textarea.focus();
+      const len = textarea.value.length;
+      textarea.setSelectionRange(len, len);
+    }
+  }
+
+  if (btnLock) {
+    if (locked) {
+      btnLock.classList.remove('unlocked');
+      btnLock.classList.add('locked');
+      btnLock.setAttribute('aria-pressed', 'false');
+      btnLock.setAttribute('aria-label', 'Unlock Head Office Address');
+      btnLock.title = 'Click to Unlock Head Office Address';
+      if (lockStatusText) lockStatusText.textContent = 'Locked';
+      if (iconLocked) iconLocked.style.display = 'block';
+      if (iconUnlocked) iconUnlocked.style.display = 'none';
+      if (showNotification) showToast('Head Office Address locked');
+    } else {
+      btnLock.classList.remove('locked');
+      btnLock.classList.add('unlocked');
+      btnLock.setAttribute('aria-pressed', 'true');
+      btnLock.setAttribute('aria-label', 'Lock Head Office Address');
+      btnLock.title = 'Click to Lock Head Office Address';
+      if (lockStatusText) lockStatusText.textContent = 'Unlocked';
+      if (iconLocked) iconLocked.style.display = 'none';
+      if (iconUnlocked) iconUnlocked.style.display = 'block';
+      if (showNotification) showToast('Head Office Address unlocked - Now editable');
+    }
+  }
 }
 
 // Helper to bind input
@@ -940,7 +1074,7 @@ function renderBackCard(targetCtx = backCtx, scale = 1) {
   targetCtx.fillStyle = '#000000';
   targetCtx.textAlign = 'left';
   targetCtx.textBaseline = 'middle';
-  targetCtx.font = `400 ${Math.round(28 * scale)}px 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif`;
+  targetCtx.font = `400 ${Math.round(28 * scale)}px 'Segoe UI', Arial, -apple-system, BlinkMacSystemFont, Roboto, sans-serif`;
 
   const leftX = 68 * scale;
 
@@ -950,6 +1084,76 @@ function renderBackCard(targetCtx = backCtx, scale = 1) {
   targetCtx.fillText(`NID: ${state.nid || ''}`, leftX, 448 * scale);
   targetCtx.fillText('Emergency Contact Number :', leftX, 508 * scale);
   targetCtx.fillText(`${state.emergencyContact || ''}`, leftX, 550 * scale);
+
+  // 4. Draw Dynamic Head Office Address Block (Same to same font, size, line-height & position)
+  // Ensure pristine white background patch before drawing dynamic text (prevents any overlapping / ghosting)
+  targetCtx.fillStyle = '#ffffff';
+  targetCtx.fillRect(40 * scale, 580 * scale, 565 * scale, 205 * scale);
+
+  if (state.headOffice && state.headOffice.trim()) {
+    targetCtx.fillStyle = '#000000';
+    targetCtx.textAlign = 'left';
+    targetCtx.textBaseline = 'middle';
+
+    const maxTextWidth = 535 * scale;
+    const defaultFontSize = 28;
+
+    // Set font for measuring
+    targetCtx.font = `400 ${Math.round(defaultFontSize * scale)}px 'Segoe UI', Arial, -apple-system, BlinkMacSystemFont, Roboto, sans-serif`;
+
+    // Process paragraphs and wrap words if any line exceeds card bounds
+    const rawParagraphs = state.headOffice.split('\n');
+    const processedLines = [];
+
+    rawParagraphs.forEach((para) => {
+      const trimmed = para.trim();
+      if (!trimmed) return;
+
+      if (targetCtx.measureText(trimmed).width <= maxTextWidth) {
+        processedLines.push(trimmed);
+      } else {
+        const words = trimmed.split(/\s+/);
+        let cur = words[0] || '';
+        for (let i = 1; i < words.length; i++) {
+          const test = cur + ' ' + words[i];
+          if (targetCtx.measureText(test).width <= maxTextWidth) {
+            cur = test;
+          } else {
+            processedLines.push(cur);
+            cur = words[i];
+          }
+        }
+        if (cur) processedLines.push(cur);
+      }
+    });
+
+    const totalLines = processedLines.length;
+    if (totalLines > 0) {
+      const defaultLineYs = [610, 660, 702, 745];
+      let fontSize = defaultFontSize;
+
+      if (totalLines > 4) {
+        fontSize = Math.max(18, Math.min(26, Math.floor(160 / totalLines)));
+      }
+
+      targetCtx.font = `400 ${Math.round(fontSize * scale)}px 'Segoe UI', Arial, -apple-system, BlinkMacSystemFont, Roboto, sans-serif`;
+
+      processedLines.forEach((line, idx) => {
+        let lineY;
+        if (totalLines <= 4 && idx < defaultLineYs.length) {
+          lineY = defaultLineYs[idx];
+        } else {
+          // Dynamically distribute within safe Head Office area (Y=605 to Y=772)
+          const startY = 605;
+          const lineGap = Math.min(42, Math.floor(167 / (totalLines - 1)));
+          lineY = Math.min(772, Math.round(startY + idx * lineGap));
+        }
+
+        const lineX = (idx === 0 ? 60 : 66) * scale;
+        targetCtx.fillText(line, lineX, lineY * scale);
+      });
+    }
+  }
 }
 
 // Ensure downloaded JPEG file size is guaranteed minimum 4MB (4.2 MB)
@@ -1045,6 +1249,8 @@ function resetAllDefaults() {
   state.bloodGroup = 'A+(ve)';
   state.nid = '3514381490522';
   state.emergencyContact = '+8801321188806';
+  state.headOffice = DEFAULT_HEAD_OFFICE;
+  setHeadOfficeLock(true);
   state.photoDataUrl = null;
   state.signatureDataUrl = null;
   state.photoScale = 1.0;
