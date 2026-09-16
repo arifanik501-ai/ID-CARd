@@ -1,10 +1,21 @@
 /**
  * MEP GROUP ID CARD GENERATOR
  * High-Performance Liquid Glass Architecture with Real-Time Persistence
- * Zero Lag • 60+ FPS Rendering • LocalStorage Auto-Save
+ * GPU-Optimized • Dark Mode Appear Animation • Snappy Micro-Transitions • 60+ FPS Rendering
  */
 
 const LOCAL_STORAGE_KEY = 'mep_id_card_saved_state_v1';
+const THEME_STORAGE_KEY = 'mep_id_theme';
+
+// Format any date object into standard 'DD Mon YYYY' format (e.g. '16 Sep 2026')
+function getFormattedTodayDate(targetDate = new Date()) {
+  const d = (targetDate instanceof Date && !isNaN(targetDate)) ? targetDate : new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month} ${year}`;
+}
 
 // Application State
 const state = {
@@ -21,8 +32,8 @@ const state = {
   signatureImg: null,
   signatureDataUrl: null,
 
-  // Back fields
-  dateOfIssue: '14 Sep 2026',
+  // Back fields (Always defaults to today's date)
+  dateOfIssue: getFormattedTodayDate(),
   dateOfJoin: '01 Oct 2025',
   bloodGroup: 'A+(ve)',
   nid: '3514381490522',
@@ -57,6 +68,7 @@ let initialOffsetY = 0;
 let frontRenderRaf = null;
 let backRenderRaf = null;
 let saveTimeout = null;
+let toastTimeout = null;
 
 function scheduleRenderFront() {
   if (frontRenderRaf) return;
@@ -84,13 +96,16 @@ function scheduleSaveState() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
     try {
-      const activeTabBtn = document.querySelector('.tab-btn.active');
+      const activeTabBtn = typeof document.querySelector === 'function' ? document.querySelector('.tab-btn.active') : null;
+      const todayFormatted = getFormattedTodayDate();
       const dataToSave = {
         name: state.name,
         designation: state.designation,
         section: state.section,
         employeeId: state.employeeId,
         dateOfIssue: state.dateOfIssue,
+        dateOfIssueSavedDate: new Date().toDateString(),
+        dateOfIssueCustom: (state.dateOfIssue !== todayFormatted),
         dateOfJoin: state.dateOfJoin,
         bloodGroup: state.bloodGroup,
         nid: state.nid,
@@ -120,7 +135,16 @@ function loadSavedState() {
     if (parsed.designation !== undefined) state.designation = parsed.designation;
     if (parsed.section !== undefined) state.section = parsed.section;
     if (parsed.employeeId !== undefined) state.employeeId = parsed.employeeId;
-    if (parsed.dateOfIssue !== undefined) state.dateOfIssue = parsed.dateOfIssue;
+
+    // Date of Issue: Always default to today's date, unless explicitly customized in today's active session
+    const todayFormatted = getFormattedTodayDate();
+    const todayDateKey = new Date().toDateString();
+    if (parsed.dateOfIssueSavedDate === todayDateKey && parsed.dateOfIssueCustom && parsed.dateOfIssue) {
+      state.dateOfIssue = parsed.dateOfIssue;
+    } else {
+      state.dateOfIssue = todayFormatted;
+    }
+
     if (parsed.dateOfJoin !== undefined) state.dateOfJoin = parsed.dateOfJoin;
     if (parsed.bloodGroup !== undefined) state.bloodGroup = parsed.bloodGroup;
     if (parsed.nid !== undefined) state.nid = parsed.nid;
@@ -144,7 +168,7 @@ function loadSavedState() {
   }
 }
 
-// Sync form inputs from state object
+// Sync form inputs & numeric badges from state object
 function syncInputsFromState() {
   const setVal = (id, val) => {
     const el = document.getElementById(id);
@@ -164,16 +188,205 @@ function syncInputsFromState() {
   setVal('photoZoom', state.photoScale);
   setVal('photoPanX', state.photoOffsetX);
   setVal('photoPanY', state.photoOffsetY);
+
+  updateSliderBadges();
+  updatePhotoUploaderUI();
+}
+
+// Update live numeric slider badges & dynamic liquid tracks
+function updateSliderBadges() {
+  const zoomEl = document.getElementById('photoZoom');
+  const panXEl = document.getElementById('photoPanX');
+  const panYEl = document.getElementById('photoPanY');
+
+  const valZoom = document.getElementById('valZoom');
+  const valPanX = document.getElementById('valPanX');
+  const valPanY = document.getElementById('valPanY');
+
+  if (valZoom) valZoom.textContent = `${state.photoScale.toFixed(2)}x`;
+  if (valPanX) valPanX.textContent = `${Math.round(state.photoOffsetX)}px`;
+  if (valPanY) valPanY.textContent = `${Math.round(state.photoOffsetY)}px`;
+
+  // Compute dynamic fill track progress percentages
+  if (zoomEl) {
+    const pct = Math.max(0, Math.min(100, ((state.photoScale - 0.5) / 2.0) * 100));
+    zoomEl.style.setProperty('--slider-progress', `${pct.toFixed(1)}%`);
+  }
+  if (panXEl) {
+    const pct = Math.max(0, Math.min(100, ((state.photoOffsetX - (-120)) / 240) * 100));
+    panXEl.style.setProperty('--slider-progress', `${pct.toFixed(1)}%`);
+  }
+  if (panYEl) {
+    const pct = Math.max(0, Math.min(100, ((state.photoOffsetY - (-120)) / 240) * 100));
+    panYEl.style.setProperty('--slider-progress', `${pct.toFixed(1)}%`);
+  }
+}
+
+// Update Photo Uploader status and display preview thumbnail
+function updatePhotoUploaderUI() {
+  const uploaderText = document.getElementById('uploaderText');
+  const uploaderSubtext = document.getElementById('uploaderSubtext');
+  const previewWrap = document.getElementById('photoPreviewWrap');
+  const previewThumb = document.getElementById('photoPreviewThumb');
+  const iconWrap = document.getElementById('uploaderIconWrap');
+
+  if (state.photoDataUrl) {
+    if (uploaderText) {
+      uploaderText.textContent = 'Photo Active • Click to Replace';
+      uploaderText.classList.add('has-photo');
+    }
+    if (uploaderSubtext) {
+      uploaderSubtext.textContent = 'Drag on card or use sliders to pan/zoom';
+    }
+    if (previewThumb) {
+      previewThumb.src = state.photoDataUrl;
+    }
+    if (previewWrap) previewWrap.style.display = 'flex';
+    if (iconWrap) iconWrap.style.display = 'none';
+  } else {
+    if (uploaderText) {
+      uploaderText.textContent = 'Upload or Drag Photo Here';
+      uploaderText.classList.remove('has-photo');
+    }
+    if (uploaderSubtext) {
+      uploaderSubtext.textContent = 'JPG, PNG • Drag & scroll canvas to pan/zoom';
+    }
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (iconWrap) iconWrap.style.display = 'flex';
+  }
+}
+
+// Update sliding tab glass capsule position
+function updateTabIndicator(tabId) {
+  const indicator = document.getElementById('tabIndicator');
+  if (!indicator) return;
+  if (tabId === 'tabBack') {
+    indicator.style.transform = 'translateX(calc(100% + 6px))';
+  } else {
+    indicator.style.transform = 'translateX(0)';
+  }
 }
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initCanvases();
   initSignaturePad();
   initEventListeners();
   initCanvasPhotoInteractions();
+  updateTabIndicator('tabFront');
   loadAssets();
 });
+
+// ----------------------------------------------------
+// Theme Management with Dark Mode Appear Reveal Animation
+// ----------------------------------------------------
+function initTheme() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  let theme = savedTheme;
+  if (!theme) {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  applyTheme(theme);
+
+  const btnToggle = document.getElementById('btnThemeToggle');
+  if (btnToggle) {
+    btnToggle.addEventListener('click', (e) => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      toggleThemeWithAnimation(newTheme, e);
+    });
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const themeModeText = document.getElementById('themeModeText');
+  if (themeModeText) {
+    themeModeText.textContent = theme === 'dark' ? 'Light' : 'Dark';
+  }
+  const btnToggle = document.getElementById('btnThemeToggle');
+  if (btnToggle) {
+    btnToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    btnToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+  }
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+}
+
+function toggleThemeWithAnimation(targetTheme, event) {
+  const isViewTransitionSupported = Boolean(document.startViewTransition)
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Compute origin coordinate (click coordinate or button center)
+  let clientX = window.innerWidth / 2;
+  let clientY = 0;
+  if (event) {
+    if (typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX !== 0 || event.clientY !== 0)) {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    } else if (event.currentTarget && event.currentTarget.getBoundingClientRect) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      clientX = rect.left + rect.width / 2;
+      clientY = rect.top + rect.height / 2;
+    }
+  }
+
+  if (!isViewTransitionSupported) {
+    // High-Performance Ripple Wave Fallback for older browsers
+    runFallbackRipple(targetTheme, clientX, clientY);
+    applyTheme(targetTheme);
+    showToast(`Switched to ${targetTheme === 'dark' ? 'Dark' : 'Light'} Mode`);
+    return;
+  }
+
+  // Modern View Transition API: Expand circular clipPath from click point across full viewport
+  const endRadius = Math.hypot(
+    Math.max(clientX, window.innerWidth - clientX),
+    Math.max(clientY, window.innerHeight - clientY)
+  );
+
+  const transition = document.startViewTransition(() => {
+    applyTheme(targetTheme);
+  });
+
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${clientX}px ${clientY}px)`,
+          `circle(${endRadius}px at ${clientX}px ${clientY}px)`
+        ]
+      },
+      {
+        duration: 460,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        pseudoElement: '::view-transition-new(root)'
+      }
+    );
+  });
+
+  showToast(`Switched to ${targetTheme === 'dark' ? 'Dark' : 'Light'} Mode`);
+}
+
+function runFallbackRipple(targetTheme, clientX, clientY) {
+  const rippleOverlay = document.getElementById('themeRipple');
+  if (!rippleOverlay) return;
+
+  const xPercent = (clientX / window.innerWidth) * 100;
+  const yPercent = (clientY / window.innerHeight) * 100;
+
+  rippleOverlay.style.setProperty('--ripple-x', `${xPercent.toFixed(1)}%`);
+  rippleOverlay.style.setProperty('--ripple-y', `${yPercent.toFixed(1)}%`);
+  rippleOverlay.style.backgroundColor = targetTheme === 'dark' ? '#090d16' : '#f1f5f9';
+
+  rippleOverlay.classList.remove('animating');
+  void rippleOverlay.offsetWidth;
+  rippleOverlay.classList.add('animating');
+
+  setTimeout(() => {
+    rippleOverlay.classList.remove('animating');
+  }, 500);
+}
 
 // Initialize Canvases
 function initCanvases() {
@@ -204,6 +417,7 @@ function loadAssets() {
         const img = new Image();
         img.onload = () => {
           state.photoImg = img;
+          updatePhotoUploaderUI();
           scheduleRenderFront();
         };
         img.src = state.photoDataUrl;
@@ -216,10 +430,7 @@ function loadAssets() {
         const sigImg = new Image();
         sigImg.onload = () => {
           state.signatureImg = sigImg;
-          sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-          sigCtx.drawImage(sigImg, 0, 0);
-          hasDrawnSignature = true;
-          document.getElementById('sigPlaceholder').style.display = 'none';
+          renderSignatureToPad(sigImg);
           scheduleRenderFront();
         };
         sigImg.src = state.signatureDataUrl;
@@ -269,7 +480,7 @@ function initDefaultPhoto() {
 
 // Set up UI Event Listeners
 function initEventListeners() {
-  // Tabs navigation
+  // Tabs navigation with snappy animated pane switch & fluid sliding capsule
   const tabBtns = document.querySelectorAll('.tab-btn');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -279,6 +490,7 @@ function initEventListeners() {
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
       const activePane = document.getElementById(tabId);
       if (activePane) activePane.classList.add('active');
+      updateTabIndicator(tabId);
       scheduleSaveState();
     });
   });
@@ -317,10 +529,11 @@ function initEventListeners() {
     }
   });
 
-  // Photo Zoom & Pan sliders
+  // Photo Zoom & Pan sliders with Live Numeric Badges
   const zoomSlider = document.getElementById('photoZoom');
   zoomSlider.addEventListener('input', (e) => {
     state.photoScale = parseFloat(e.target.value);
+    updateSliderBadges();
     scheduleRenderFront();
     scheduleSaveState();
   });
@@ -328,6 +541,7 @@ function initEventListeners() {
   const panXSlider = document.getElementById('photoPanX');
   panXSlider.addEventListener('input', (e) => {
     state.photoOffsetX = parseFloat(e.target.value);
+    updateSliderBadges();
     scheduleRenderFront();
     scheduleSaveState();
   });
@@ -335,6 +549,7 @@ function initEventListeners() {
   const panYSlider = document.getElementById('photoPanY');
   panYSlider.addEventListener('input', (e) => {
     state.photoOffsetY = parseFloat(e.target.value);
+    updateSliderBadges();
     scheduleRenderFront();
     scheduleSaveState();
   });
@@ -346,8 +561,10 @@ function initEventListeners() {
     zoomSlider.value = 1.0;
     panXSlider.value = 0;
     panYSlider.value = 0;
+    updateSliderBadges();
     scheduleRenderFront();
     scheduleSaveState();
+    showToast('Photo position reset');
   });
 
   // Signature image upload
@@ -369,6 +586,52 @@ function initEventListeners() {
 
   const btnBothHeader = document.getElementById('btnDownloadBothHeader');
   if (btnBothHeader) btnBothHeader.addEventListener('click', downloadBothCards);
+
+  // Today's date quick action button ("Date of Issue")
+  const btnSetToday = document.getElementById('btnSetTodayDate');
+  if (btnSetToday) {
+    btnSetToday.addEventListener('click', () => {
+      const todayFormatted = getFormattedTodayDate();
+      state.dateOfIssue = todayFormatted;
+      const inputEl = document.getElementById('inputDateOfIssue');
+      if (inputEl) inputEl.value = todayFormatted;
+      scheduleRenderBack();
+      scheduleSaveState();
+      showToast(`Date of Issue set to Today (${todayFormatted})`);
+    });
+  }
+
+  // Calendar picker helper for Date of Issue
+  const btnPickDate = document.getElementById('btnPickDate');
+  const datePickerHelper = document.getElementById('datePickerHelper');
+  if (btnPickDate && datePickerHelper) {
+    btnPickDate.addEventListener('click', () => {
+      try {
+        if (typeof datePickerHelper.showPicker === 'function') {
+          datePickerHelper.showPicker();
+        } else {
+          datePickerHelper.click();
+        }
+      } catch (err) {
+        datePickerHelper.click();
+      }
+    });
+
+    datePickerHelper.addEventListener('change', (e) => {
+      const val = e.target.value; // YYYY-MM-DD
+      if (!val) return;
+      const [y, m, d] = val.split('-');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthName = months[parseInt(m, 10) - 1];
+      const formatted = `${d} ${monthName} ${y}`;
+      state.dateOfIssue = formatted;
+      const inputEl = document.getElementById('inputDateOfIssue');
+      if (inputEl) inputEl.value = formatted;
+      scheduleRenderBack();
+      scheduleSaveState();
+      showToast(`Date of Issue set to: ${formatted}`);
+    });
+  }
 
   // Reset to default button
   const btnReset = document.getElementById('btnResetDefault');
@@ -411,6 +674,8 @@ function processPhotoFile(file) {
       document.getElementById('photoZoom').value = 1.0;
       document.getElementById('photoPanX').value = 0;
       document.getElementById('photoPanY').value = 0;
+      updateSliderBadges();
+      updatePhotoUploaderUI();
       scheduleRenderFront();
       scheduleSaveState();
       showToast('Photo uploaded successfully!');
@@ -418,6 +683,25 @@ function processPhotoFile(file) {
     img.src = dataUrl;
   };
   reader.readAsDataURL(file);
+}
+
+// Helper to render signature cleanly fitted and centered in signature pad
+function renderSignatureToPad(img) {
+  if (!sigCtx || !signatureCanvas || !img) return;
+  sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  const aspect = img.width / img.height;
+  let drawW = signatureCanvas.width * 0.82;
+  let drawH = drawW / aspect;
+  if (drawH > signatureCanvas.height * 0.82) {
+    drawH = signatureCanvas.height * 0.82;
+    drawW = drawH * aspect;
+  }
+  const drawX = (signatureCanvas.width - drawW) / 2;
+  const drawY = (signatureCanvas.height - drawH) / 2;
+  sigCtx.drawImage(img, drawX, drawY, drawW, drawH);
+  hasDrawnSignature = true;
+  const placeholder = document.getElementById('sigPlaceholder');
+  if (placeholder) placeholder.style.display = 'none';
 }
 
 // Handle Signature Upload
@@ -431,24 +715,7 @@ function handleSignatureUpload(e) {
     img.onload = () => {
       state.signatureImg = img;
       state.signatureDataUrl = dataUrl;
-
-      sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-      const aspect = img.width / img.height;
-      let drawW = signatureCanvas.width * 0.8;
-      let drawH = drawW / aspect;
-      if (drawH > signatureCanvas.height * 0.8) {
-        drawH = signatureCanvas.height * 0.8;
-        drawW = drawH * aspect;
-      }
-      sigCtx.drawImage(
-        img,
-        (signatureCanvas.width - drawW) / 2,
-        (signatureCanvas.height - drawH) / 2,
-        drawW,
-        drawH
-      );
-      hasDrawnSignature = true;
-      document.getElementById('sigPlaceholder').style.display = 'none';
+      renderSignatureToPad(img);
       scheduleRenderFront();
       scheduleSaveState();
       showToast('Signature added successfully!');
@@ -486,7 +753,8 @@ function initSignaturePad() {
     e.preventDefault();
     isDrawingSignature = true;
     hasDrawnSignature = true;
-    document.getElementById('sigPlaceholder').style.display = 'none';
+    const placeholder = document.getElementById('sigPlaceholder');
+    if (placeholder) placeholder.style.display = 'none';
     const pos = getPos(e);
     sigCtx.beginPath();
     sigCtx.moveTo(pos.x, pos.y);
@@ -500,10 +768,50 @@ function initSignaturePad() {
     sigCtx.stroke();
   }
 
+  function getTrimmedCanvas(sourceCanvas) {
+    const sCtx = sourceCanvas.getContext('2d');
+    const w = sourceCanvas.width;
+    const h = sourceCanvas.height;
+    const imgData = sCtx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+    let minX = w, maxX = 0, minY = h, maxY = 0;
+    let found = false;
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const alpha = data[(y * w + x) * 4 + 3];
+        if (alpha > 10) {
+          found = true;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (!found) return null;
+
+    minX = Math.max(0, minX - 4);
+    minY = Math.max(0, minY - 4);
+    maxX = Math.min(w - 1, maxX + 4);
+    maxY = Math.min(h - 1, maxY + 4);
+
+    const trimW = maxX - minX + 1;
+    const trimH = maxY - minY + 1;
+
+    const trimmed = document.createElement('canvas');
+    trimmed.width = trimW;
+    trimmed.height = trimH;
+    trimmed.getContext('2d').drawImage(sourceCanvas, minX, minY, trimW, trimH, 0, 0, trimW, trimH);
+    return trimmed;
+  }
+
   function stopDrawing() {
     if (!isDrawingSignature) return;
     isDrawingSignature = false;
-    const dataUrl = signatureCanvas.toDataURL('image/png');
+    const trimmed = getTrimmedCanvas(signatureCanvas);
+    const dataUrl = trimmed ? trimmed.toDataURL('image/png') : signatureCanvas.toDataURL('image/png');
     const img = new Image();
     img.onload = () => {
       state.signatureImg = img;
@@ -524,12 +832,16 @@ function initSignaturePad() {
 }
 
 function clearSignature() {
-  sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  if (sigCtx && signatureCanvas) {
+    sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  }
   state.signatureImg = null;
   state.signatureDataUrl = null;
   hasDrawnSignature = false;
-  document.getElementById('sigPlaceholder').style.display = 'block';
-  document.getElementById('sigImageInput').value = '';
+  const placeholder = document.getElementById('sigPlaceholder');
+  if (placeholder) placeholder.style.display = 'block';
+  const sigInput = document.getElementById('sigImageInput');
+  if (sigInput) sigInput.value = '';
   scheduleRenderFront();
   scheduleSaveState();
 }
@@ -594,17 +906,18 @@ function renderFrontCard(targetCtx = frontCtx, scale = 1) {
   const idText = state.employeeId ? `Employee ID: ${state.employeeId}` : '';
   targetCtx.fillText(idText, 305 * scale, 768 * scale);
 
-  // 4. Draw Employee Signature
+  // 4. Draw Employee Signature (slightly enlarged to match layout)
   if (state.signatureImg) {
     const sigAspect = state.signatureImg.width / state.signatureImg.height;
-    let sW = 160 * scale;
+    let sW = 190 * scale;
     let sH = sW / sigAspect;
-    if (sH > 60 * scale) {
-      sH = 60 * scale;
+    const maxH = 75 * scale;
+    if (sH > maxH) {
+      sH = maxH;
       sW = sH * sigAspect;
     }
     const sX = (485 * scale) - (sW / 2);
-    const sY = (855 * scale) - (sH / 2);
+    const sY = (850 * scale) - (sH / 2);
     targetCtx.drawImage(state.signatureImg, sX, sY, sW, sH);
   }
 }
@@ -706,7 +1019,7 @@ function downloadCard(side) {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast(`${side === 'front' ? 'Front' : 'Back'} card downloaded (4MB+ Ultra HD)!`);
+      showToast(`${side === 'front' ? 'Front' : 'Back'} card downloaded (4.2 MB HD)!`);
     });
   }, 'image/jpeg', 0.99);
 }
@@ -727,7 +1040,7 @@ function resetAllDefaults() {
   state.designation = 'Senior Executive';
   state.section = 'Administration';
   state.employeeId = '17224';
-  state.dateOfIssue = '14 Sep 2026';
+  state.dateOfIssue = getFormattedTodayDate();
   state.dateOfJoin = '01 Oct 2025';
   state.bloodGroup = 'A+(ve)';
   state.nid = '3514381490522';
@@ -737,6 +1050,14 @@ function resetAllDefaults() {
   state.photoScale = 1.0;
   state.photoOffsetX = 0;
   state.photoOffsetY = 0;
+
+  const photoInput = document.getElementById('photoInput');
+  if (photoInput) photoInput.value = '';
+  const sigInput = document.getElementById('sigImageInput');
+  if (sigInput) sigInput.value = '';
+
+  const frontTabBtn = document.querySelector('.tab-btn[data-tab="tabFront"]');
+  if (frontTabBtn) frontTabBtn.click();
 
   syncInputsFromState();
   clearSignature();
@@ -748,9 +1069,16 @@ function resetAllDefaults() {
 // Toast notification helper
 function showToast(message) {
   const toast = document.getElementById('toast');
-  toast.textContent = message;
+  const toastMsg = document.getElementById('toastMsg');
+  if (toastMsg) {
+    toastMsg.textContent = message;
+  } else if (toast) {
+    toast.textContent = message;
+  }
+  if (!toast) return;
   toast.classList.add('show');
-  setTimeout(() => {
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
     toast.classList.remove('show');
   }, 2600);
 }
@@ -785,8 +1113,8 @@ function initCanvasPhotoInteractions() {
 
       document.getElementById('photoPanX').value = state.photoOffsetX;
       document.getElementById('photoPanY').value = state.photoOffsetY;
+      updateSliderBadges();
       scheduleRenderFront();
-      scheduleSaveState();
     } else {
       const coords = getCanvasCoords(e);
       frontCanvas.style.cursor = isOverPhoto(coords.x, coords.y) ? 'grab' : 'default';
@@ -810,6 +1138,7 @@ function initCanvasPhotoInteractions() {
     if (isDraggingPhoto) {
       isDraggingPhoto = false;
       frontCanvas.style.cursor = 'grab';
+      scheduleSaveState();
     }
   });
 
@@ -822,6 +1151,7 @@ function initCanvasPhotoInteractions() {
       newScale = Math.max(0.5, Math.min(2.5, newScale));
       state.photoScale = newScale;
       document.getElementById('photoZoom').value = newScale;
+      updateSliderBadges();
       scheduleRenderFront();
       scheduleSaveState();
     }
@@ -847,12 +1177,15 @@ function initCanvasPhotoInteractions() {
       state.photoOffsetY = Math.max(-120, Math.min(120, Math.round(initialOffsetY + deltaY)));
       document.getElementById('photoPanX').value = state.photoOffsetX;
       document.getElementById('photoPanY').value = state.photoOffsetY;
+      updateSliderBadges();
       scheduleRenderFront();
-      scheduleSaveState();
     }
   }, { passive: true });
 
   frontCanvas.addEventListener('touchend', () => {
-    isDraggingPhoto = false;
+    if (isDraggingPhoto) {
+      isDraggingPhoto = false;
+      scheduleSaveState();
+    }
   });
 }

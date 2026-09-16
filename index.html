@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,23 +8,58 @@
 </head>
 <body>
 
-  <!-- High Performance Liquid Mesh Background -->
-  <div class="liquid-background"></div>
+  <!-- Liquid Ambient Background Orbs (Zero-Lag GPU Composited) -->
+  <div class="liquid-background" id="liquidBg">
+    <div class="liquid-orb orb-1"></div>
+    <div class="liquid-orb orb-2"></div>
+    <div class="liquid-orb orb-3"></div>
+    <div class="liquid-orb orb-4"></div>
+  </div>
 
-  <!-- Liquid Glass Header -->
+  <!-- Full-Screen Theme Ripple Overlay (Dark/Light Appear Animation) -->
+  <div class="theme-ripple-overlay" id="themeRipple"></div>
+
+  <!-- Ultra-Modern Liquid Glass Header -->
   <header class="app-header">
     <div class="header-brand">
       <div class="brand-badge">MEP</div>
       <div class="header-title">
         <h1>ID Card Generator</h1>
+        <div class="header-subtitle">Professional Printing Suite</div>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary" id="btnResetDefault">
-        Reset
+      <!-- Dark Mode Appear Toggle Button -->
+      <button class="btn btn-secondary theme-toggle-btn" id="btnThemeToggle" type="button" aria-label="Toggle Dark Mode" aria-pressed="false" title="Toggle Light / Dark Mode">
+        <span class="theme-icon-wrap">
+          <svg class="theme-icon icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="theme-icon icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+        <span class="theme-mode-text" id="themeModeText">Dark</span>
       </button>
-      <button class="btn btn-primary" id="btnDownloadBothHeader">
-        Download Both (JPG)
+
+      <!-- Reset Default Button -->
+      <button class="btn btn-secondary" id="btnResetDefault" type="button" title="Reset All Data to Defaults">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+        <span>Reset</span>
+      </button>
+
+      <!-- Primary Header Download Both Button -->
+      <button class="btn btn-primary" id="btnDownloadBothHeader" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Download Both (JPG)</span>
       </button>
     </div>
   </header>
@@ -32,15 +67,18 @@
   <!-- Main Workspace -->
   <main class="app-container">
 
-    <!-- Glass Form Panel -->
+    <!-- Glass Form Panel (Sidebar) -->
     <aside class="glass-panel form-panel">
-      <!-- Glass Tabs Nav -->
-      <nav class="tabs-nav">
-        <button class="tab-btn active" data-tab="tabFront">
+      <!-- Glass Tabs Navigation -->
+      <nav class="tabs-nav" id="tabsNav">
+        <div class="tab-indicator" id="tabIndicator" aria-hidden="true"></div>
+        <button class="tab-btn active" data-tab="tabFront" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>
           <span>Front Side</span>
           <span class="tab-badge">6 Fields</span>
         </button>
-        <button class="tab-btn" data-tab="tabBack">
+        <button class="tab-btn" data-tab="tabBack" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="13" y2="16"></line></svg>
           <span>Back Side</span>
           <span class="tab-badge">5 Fields</span>
         </button>
@@ -53,30 +91,48 @@
           
           <!-- 1. Employee Photo -->
           <div class="form-group">
-            <label>1. Employee Photo</label>
+            <div class="field-header">
+              <span class="field-num">1</span>
+              <label>Employee Photo</label>
+            </div>
             <div class="photo-uploader" id="photoUploader">
               <div class="uploader-inner">
-                <span class="upload-icon">📷</span>
-                <span class="uploader-text">Upload or Drag Photo Here</span>
+                <div class="uploader-icon-wrap" id="uploaderIconWrap">
+                  <svg class="upload-icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="photo-preview-wrap" id="photoPreviewWrap" style="display: none;">
+                  <img id="photoPreviewThumb" class="photo-preview-thumb" alt="Employee Photo Thumbnail">
+                  <span class="photo-active-badge">Active</span>
+                </div>
+                <div class="uploader-text" id="uploaderText">Upload or Drag Photo Here</div>
+                <div class="uploader-subtext" id="uploaderSubtext">JPG, PNG • Drag &amp; scroll canvas to pan/zoom</div>
               </div>
               <input type="file" id="photoInput" accept="image/*" style="display: none;">
             </div>
 
-            <!-- Photo Zoom & Pan controls -->
+            <!-- Photo Zoom & Pan controls with Live Numeric Badges -->
             <div class="photo-controls">
               <div class="control-row">
-                <span>Zoom:</span>
+                <span class="control-label">Zoom:</span>
                 <input type="range" class="control-slider" id="photoZoom" min="0.5" max="2.5" step="0.05" value="1">
+                <span class="slider-val" id="valZoom">1.0x</span>
               </div>
               <div class="control-row">
-                <span>Horizontal:</span>
+                <span class="control-label">Horizontal:</span>
                 <input type="range" class="control-slider" id="photoPanX" min="-120" max="120" step="1" value="0">
+                <span class="slider-val" id="valPanX">0px</span>
               </div>
               <div class="control-row">
-                <span>Vertical:</span>
+                <span class="control-label">Vertical:</span>
                 <input type="range" class="control-slider" id="photoPanY" min="-120" max="120" step="1" value="0">
+                <span class="slider-val" id="valPanY">0px</span>
               </div>
-              <button class="btn btn-secondary btn-sm" id="btnResetPhotoAdjust" style="align-self: flex-end; margin-top: 4px;">
+              <button class="btn btn-secondary btn-sm" id="btnResetPhotoAdjust" type="button" style="align-self: flex-end; margin-top: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
                 Reset Position
               </button>
             </div>
@@ -84,37 +140,59 @@
 
           <!-- 2. Full Name -->
           <div class="form-group">
-            <label for="inputName">2. Full Name</label>
-            <input type="text" id="inputName" class="form-input" value="Kazi Mahmud Alam" placeholder="Enter Full Name">
+            <div class="field-header">
+              <span class="field-num">2</span>
+              <label for="inputName">Full Name</label>
+            </div>
+            <input type="text" id="inputName" class="form-input" value="Kazi Mahmud Alam" placeholder="Enter Full Name" autocomplete="off">
           </div>
 
           <!-- 3. Designation -->
           <div class="form-group">
-            <label for="inputDesignation">3. Designation</label>
-            <input type="text" id="inputDesignation" class="form-input" value="Senior Executive" placeholder="Enter Designation">
+            <div class="field-header">
+              <span class="field-num">3</span>
+              <label for="inputDesignation">Designation</label>
+            </div>
+            <input type="text" id="inputDesignation" class="form-input" value="Senior Executive" placeholder="Enter Designation" autocomplete="off">
           </div>
 
           <!-- 4. Section -->
           <div class="form-group">
-            <label for="inputSection">4. Section</label>
-            <input type="text" id="inputSection" class="form-input" value="Administration" placeholder="Enter Section / Department">
+            <div class="field-header">
+              <span class="field-num">4</span>
+              <label for="inputSection">Section</label>
+            </div>
+            <input type="text" id="inputSection" class="form-input" value="Administration" placeholder="Enter Section / Department" autocomplete="off">
           </div>
 
           <!-- 5. Employee ID -->
           <div class="form-group">
-            <label for="inputEmployeeId">5. Employee ID</label>
-            <input type="text" id="inputEmployeeId" class="form-input" value="17224" placeholder="Enter Employee ID">
+            <div class="field-header">
+              <span class="field-num">5</span>
+              <label for="inputEmployeeId">Employee ID</label>
+            </div>
+            <input type="text" id="inputEmployeeId" class="form-input" value="17224" placeholder="Enter Employee ID" autocomplete="off">
           </div>
 
           <!-- 6. Employee Signature -->
           <div class="form-group">
-            <label>6. Employee Signature</label>
+            <div class="field-header">
+              <span class="field-num">6</span>
+              <label>Employee Signature</label>
+            </div>
             <div class="signature-box">
               <div class="sig-tools">
-                <span class="sig-title">Signature Pad</span>
+                <span class="sig-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                  Signature Pad
+                </span>
                 <div style="display: flex; gap: 6px;">
-                  <button class="btn btn-secondary btn-sm" id="btnClearSig" type="button">Clear</button>
+                  <button class="btn btn-secondary btn-sm" id="btnClearSig" type="button">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Clear
+                  </button>
                   <label class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     Upload
                     <input type="file" id="sigImageInput" accept="image/*" style="display: none;">
                   </label>
@@ -134,20 +212,44 @@
 
           <!-- 7. Date of Issue -->
           <div class="form-group">
-            <label for="inputDateOfIssue">7. Date of Issue</label>
-            <input type="text" id="inputDateOfIssue" class="form-input" value="14 Sep 2026" placeholder="e.g. 14 Sep 2026">
+            <div class="field-header">
+              <span class="field-num">7</span>
+              <label for="inputDateOfIssue">Date of Issue</label>
+              <button type="button" class="btn-today-badge" id="btnSetTodayDate" title="Click to set Today's Date">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Today
+              </button>
+            </div>
+            <div class="input-with-action">
+              <input type="text" id="inputDateOfIssue" class="form-input" placeholder="e.g. 16 Sep 2026" autocomplete="off">
+              <button type="button" class="input-action-btn" id="btnPickDate" title="Choose from calendar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+              <input type="date" id="datePickerHelper" tabindex="-1" aria-hidden="true" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;">
+            </div>
           </div>
 
           <!-- 8. Date of Joining -->
           <div class="form-group">
-            <label for="inputDateOfJoin">8. Date of Joining</label>
-            <input type="text" id="inputDateOfJoin" class="form-input" value="01 Oct 2025" placeholder="e.g. 01 Oct 2025">
+            <div class="field-header">
+              <span class="field-num">8</span>
+              <label for="inputDateOfJoin">Date of Joining</label>
+            </div>
+            <input type="text" id="inputDateOfJoin" class="form-input" value="01 Oct 2025" placeholder="e.g. 01 Oct 2025" autocomplete="off">
           </div>
 
           <!-- 9. Blood Group -->
           <div class="form-group">
-            <label for="inputBloodGroup">9. Blood Group</label>
-            <input type="text" id="inputBloodGroup" class="form-input" list="bloodList" value="A+(ve)" placeholder="e.g. A+(ve)">
+            <div class="field-header">
+              <span class="field-num">9</span>
+              <label for="inputBloodGroup">Blood Group</label>
+            </div>
+            <input type="text" id="inputBloodGroup" class="form-input" list="bloodList" value="A+(ve)" placeholder="e.g. A+(ve)" autocomplete="off">
             <datalist id="bloodList">
               <option value="A+(ve)">
               <option value="A-(ve)">
@@ -162,14 +264,20 @@
 
           <!-- 10. National ID (NID) -->
           <div class="form-group">
-            <label for="inputNID">10. National ID (NID)</label>
-            <input type="text" id="inputNID" class="form-input" value="3514381490522" placeholder="Enter National ID">
+            <div class="field-header">
+              <span class="field-num">10</span>
+              <label for="inputNID">National ID (NID)</label>
+            </div>
+            <input type="text" id="inputNID" class="form-input" value="3514381490522" placeholder="Enter National ID" autocomplete="off">
           </div>
 
           <!-- 11. Emergency Contact Number -->
           <div class="form-group">
-            <label for="inputEmergencyContact">11. Emergency Contact Number</label>
-            <input type="text" id="inputEmergencyContact" class="form-input" value="+8801321188806" placeholder="+8801XXXXXXXXX">
+            <div class="field-header">
+              <span class="field-num">11</span>
+              <label for="inputEmergencyContact">Emergency Contact Number</label>
+            </div>
+            <input type="text" id="inputEmergencyContact" class="form-input" value="+8801321188806" placeholder="+8801XXXXXXXXX" autocomplete="off">
           </div>
 
         </div>
@@ -183,11 +291,17 @@
       <!-- Preview Toolbar -->
       <div class="preview-toolbar">
         <div class="toolbar-title">
-          Live Card Preview
+          <span class="live-indicator">
+            <span class="live-pulse"></span>
+            <span class="live-dot"></span>
+          </span>
+          <span>Live Card Preview</span>
+          <span class="quality-badge">1200 DPI Press Ready</span>
         </div>
         <div class="toolbar-actions">
-          <button class="btn btn-primary" id="btnDownloadBoth">
-            Download Both (JPG)
+          <button class="btn btn-primary" id="btnDownloadBoth" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download Both (JPG)</span>
           </button>
         </div>
       </div>
@@ -197,23 +311,33 @@
 
         <!-- Front Card -->
         <div class="card-column">
-          <div class="card-label">Front Side</div>
+          <div class="card-label">
+            <span class="side-badge">Front Side</span>
+            <span class="dim-tag">646 &times; 1021 px</span>
+          </div>
           <div class="card-wrapper">
             <canvas id="frontCanvas" class="id-card-canvas"></canvas>
           </div>
-          <button class="btn btn-primary card-download-btn" id="btnDownloadFront">
-            Download Front (JPG)
+          <button class="btn btn-primary card-download-btn" id="btnDownloadFront" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download Front (JPG)</span>
+            <span class="btn-sub-badge">4.2 MB</span>
           </button>
         </div>
 
         <!-- Back Card -->
         <div class="card-column">
-          <div class="card-label">Back Side</div>
+          <div class="card-label">
+            <span class="side-badge">Back Side</span>
+            <span class="dim-tag">646 &times; 1021 px</span>
+          </div>
           <div class="card-wrapper">
             <canvas id="backCanvas" class="id-card-canvas"></canvas>
           </div>
-          <button class="btn btn-primary card-download-btn" id="btnDownloadBack">
-            Download Back (JPG)
+          <button class="btn btn-primary card-download-btn" id="btnDownloadBack" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download Back (JPG)</span>
+            <span class="btn-sub-badge">4.2 MB</span>
           </button>
         </div>
 
@@ -223,14 +347,17 @@
 
   </main>
 
-  <!-- Corner Credit Badge (Small Size, Premium Glass UI) -->
+  <!-- Sleek Corner Credit Badge (Ultra-Refined Floating Glass UI) -->
   <div class="corner-credit">
-    <div class="credit-title">Created : <strong>Arif Ahmed Anik</strong></div>
+    <div class="credit-title">Created by <strong>Arif Ahmed Anik</strong></div>
     <div class="credit-org">MEP FAN LTD.</div>
   </div>
 
-  <!-- Toast Message -->
-  <div class="toast" id="toast">Action completed successfully</div>
+  <!-- Toast Notification with Glass Aesthetic -->
+  <div class="toast" id="toast">
+    <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span id="toastMsg">Action completed successfully</span>
+  </div>
 
   <!-- Scripts -->
   <script src="templates_data.js"></script>
