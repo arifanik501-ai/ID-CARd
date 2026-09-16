@@ -1129,9 +1129,11 @@ function renderBackCard(targetCtx = backCtx, scale = 1) {
   targetCtx.font = `400 ${Math.round(28 * scale)}px 'Segoe UI', Arial, -apple-system, BlinkMacSystemFont, Roboto, sans-serif`;
 
   const leftX = 68 * scale;
+  const isJoinVisible = (state.showDateOfJoin !== false);
+  const dateOfIssueY = isJoinVisible ? 318 : 362;
 
-  targetCtx.fillText(`Date of Issue: ${state.dateOfIssue || ''}`, leftX, 318 * scale);
-  if (state.showDateOfJoin !== false) {
+  targetCtx.fillText(`Date of Issue: ${state.dateOfIssue || ''}`, leftX, dateOfIssueY * scale);
+  if (isJoinVisible) {
     targetCtx.fillText(`Date of Join: ${state.dateOfJoin || ''}`, leftX, 362 * scale);
   }
   targetCtx.fillText(`Blood Group: ${state.bloodGroup || ''}`, leftX, 405 * scale);
