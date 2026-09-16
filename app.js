@@ -40,6 +40,7 @@ const state = {
   // Back fields (Always defaults to today's date)
   dateOfIssue: getFormattedTodayDate(),
   dateOfJoin: '01 Oct 2025',
+  showDateOfJoin: true,
   bloodGroup: 'A+(ve)',
   nid: '3514381490522',
   emergencyContact: '+8801321188806',
@@ -113,6 +114,7 @@ function scheduleSaveState() {
         dateOfIssueSavedDate: new Date().toDateString(),
         dateOfIssueCustom: (state.dateOfIssue !== todayFormatted),
         dateOfJoin: state.dateOfJoin,
+        showDateOfJoin: state.showDateOfJoin !== false,
         bloodGroup: state.bloodGroup,
         nid: state.nid,
         emergencyContact: state.emergencyContact,
@@ -153,6 +155,7 @@ function loadSavedState() {
     }
 
     if (parsed.dateOfJoin !== undefined) state.dateOfJoin = parsed.dateOfJoin;
+    if (parsed.showDateOfJoin !== undefined) state.showDateOfJoin = parsed.showDateOfJoin;
     if (parsed.bloodGroup !== undefined) state.bloodGroup = parsed.bloodGroup;
     if (parsed.nid !== undefined) state.nid = parsed.nid;
     if (parsed.emergencyContact !== undefined) state.emergencyContact = parsed.emergencyContact;
@@ -189,6 +192,7 @@ function syncInputsFromState() {
   setVal('inputEmployeeId', state.employeeId);
   setVal('inputDateOfIssue', state.dateOfIssue);
   setVal('inputDateOfJoin', state.dateOfJoin);
+  setDateOfJoinVisibility(state.showDateOfJoin !== false, false);
   setVal('inputBloodGroup', state.bloodGroup);
   setVal('inputNID', state.nid);
   setVal('inputEmergencyContact', state.emergencyContact);
@@ -667,6 +671,14 @@ function initEventListeners() {
     });
   }
 
+  // Date of Joining ON/OFF visibility toggle button
+  const btnToggleJoin = document.getElementById('btnToggleDateOfJoin');
+  if (btnToggleJoin) {
+    btnToggleJoin.addEventListener('click', () => {
+      setDateOfJoinVisibility(!state.showDateOfJoin, true);
+    });
+  }
+
   // Reset Confirmation Modal Handlers
   const resetModal = document.getElementById('resetModal');
   const btnOpenResetModal = document.getElementById('btnOpenResetModal');
@@ -769,6 +781,46 @@ function setHeadOfficeLock(locked, showNotification = false) {
       if (iconUnlocked) iconUnlocked.style.display = 'block';
       if (showNotification) showToast('Head Office Address unlocked - Now editable');
     }
+  }
+}
+
+// Date of Joining Visibility Toggle Controller (ON/OFF on Card)
+function setDateOfJoinVisibility(show, showNotification = false) {
+  state.showDateOfJoin = (show === true);
+  const btnToggle = document.getElementById('btnToggleDateOfJoin');
+  const label = document.getElementById('dateOfJoinStatusLabel');
+  const inputEl = document.getElementById('inputDateOfJoin');
+
+  if (btnToggle) {
+    if (state.showDateOfJoin) {
+      btnToggle.classList.add('active');
+      btnToggle.setAttribute('aria-pressed', 'true');
+      btnToggle.title = 'Date of Joining is visible on card. Click to hide.';
+      if (label) label.textContent = 'ON';
+    } else {
+      btnToggle.classList.remove('active');
+      btnToggle.setAttribute('aria-pressed', 'false');
+      btnToggle.title = 'Date of Joining is hidden on card. Click to show.';
+      if (label) label.textContent = 'OFF';
+    }
+  }
+
+  if (inputEl) {
+    if (state.showDateOfJoin) {
+      inputEl.removeAttribute('disabled');
+      inputEl.classList.remove('is-field-disabled');
+      inputEl.title = 'Enter Date of Joining';
+    } else {
+      inputEl.setAttribute('disabled', 'true');
+      inputEl.classList.add('is-field-disabled');
+      inputEl.title = 'Date of Joining is currently hidden/blank on ID card';
+    }
+  }
+
+  scheduleRenderBack();
+  scheduleSaveState();
+  if (showNotification) {
+    showToast(state.showDateOfJoin ? 'Date of Join enabled on card' : 'Date of Join hidden on card');
   }
 }
 
@@ -1079,7 +1131,9 @@ function renderBackCard(targetCtx = backCtx, scale = 1) {
   const leftX = 68 * scale;
 
   targetCtx.fillText(`Date of Issue: ${state.dateOfIssue || ''}`, leftX, 318 * scale);
-  targetCtx.fillText(`Date of Join: ${state.dateOfJoin || ''}`, leftX, 362 * scale);
+  if (state.showDateOfJoin !== false) {
+    targetCtx.fillText(`Date of Join: ${state.dateOfJoin || ''}`, leftX, 362 * scale);
+  }
   targetCtx.fillText(`Blood Group: ${state.bloodGroup || ''}`, leftX, 405 * scale);
   targetCtx.fillText(`NID: ${state.nid || ''}`, leftX, 448 * scale);
   targetCtx.fillText('Emergency Contact Number :', leftX, 508 * scale);
@@ -1246,6 +1300,7 @@ function resetAllDefaults() {
   state.employeeId = '17224';
   state.dateOfIssue = getFormattedTodayDate();
   state.dateOfJoin = '01 Oct 2025';
+  state.showDateOfJoin = true;
   state.bloodGroup = 'A+(ve)';
   state.nid = '3514381490522';
   state.emergencyContact = '+8801321188806';

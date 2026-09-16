@@ -734,6 +734,104 @@ body::-webkit-scrollbar,
   display: block;
 }
 
+/* ----------------------------------------------------
+   Date of Joining ON/OFF Liquid Glass Toggle Switch
+   ---------------------------------------------------- */
+.btn-toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 3px 8px 3px 6px;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform var(--trans-fast), background-color var(--trans-fast), border-color var(--trans-fast), box-shadow var(--trans-fast);
+  font-family: inherit;
+  user-select: none;
+}
+
+.switch-track {
+  width: 28px;
+  height: 16px;
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 20px;
+  position: relative;
+  transition: background-color 0.22s var(--ease-snappy), box-shadow 0.22s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.switch-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.switch-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* When Switch is Active (ON) */
+.btn-toggle-switch.active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.btn-toggle-switch.active .switch-track {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.btn-toggle-switch.active .switch-thumb {
+  transform: translateX(12px);
+}
+
+.btn-toggle-switch.active .switch-label {
+  color: #059669;
+}
+
+[data-theme="dark"] .btn-toggle-switch.active {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+[data-theme="dark"] .btn-toggle-switch.active .switch-label {
+  color: #34d399;
+}
+
+.btn-toggle-switch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-toggle-switch:active {
+  transform: translateY(0);
+}
+
+/* Disabled Input State when Toggled OFF */
+.form-input.is-field-disabled {
+  opacity: 0.42;
+  background: rgba(148, 163, 184, 0.12) !important;
+  cursor: not-allowed;
+  border-style: dashed;
+  filter: grayscale(0.8);
+  user-select: none;
+}
+
 /* Head Office Textarea Styling */
 .textarea-lock-wrapper {
   position: relative;
